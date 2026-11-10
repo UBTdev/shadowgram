@@ -30,5 +30,15 @@ services:
         condition: service_healthy     # стартовать, когда база готова принимать подключения
     restart: unless-stopped
 
+  element:
+    image: vectorim/element-web:latest
+    volumes:
+      - ./element/config.json:/app/config.json:ro
+    ports:
+      - "127.0.0.1:8088:80"
+    restart: unless-stopped
+
+
 volumes:
   db-data:
+
