@@ -1,5 +1,6 @@
 <script setup>
 import { useRooms } from '../composables/useRooms'
+import DeviceVerification from './DeviceVerification.vue'
 
 const props = defineProps({
   client: { type: Object, required: true },
@@ -30,6 +31,8 @@ function initial(name) {
       <span class="truncate font-semibold">{{ client.getUserId() }}</span>
       <button class="text-sm text-zinc-400 hover:text-zinc-100" @click="emit('logout')">Выйти</button>
     </header>
+
+    <DeviceVerification :client="client" />
 
     <ul class="flex-1 overflow-y-auto">
       <li

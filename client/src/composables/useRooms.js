@@ -1,14 +1,17 @@
 import { ref, onMounted, onUnmounted } from 'vue'
-import { ClientEvent, RoomEvent, NotificationCountType } from 'matrix-js-sdk'
+import { ClientEvent, RoomEvent, MatrixEventEvent, NotificationCountType } from 'matrix-js-sdk'
 
 // Текст последнего сообщения для превью в списке чатов
 function lastMessagePreview(room) {
   const events = room.getLiveTimeline().getEvents()
   for (let i = events.length - 1; i >= 0; i--) {
     const ev = events[i]
+    // Нет ключа для расшифровки: устройство не подтверждено или ключ ещё не пришёл
+    if (ev.isDecryptionFailure()) return '🔒 Не удалось расшифровать'
+    // Расшифрованное сообщение SDK отдаёт как обычное m.room.message
     if (ev.getType() === 'm.room.message') return ev.getContent().body ?? ''
-    // Расшифровку подключим на шаге 2.3, пока показываем заглушку
-    if (ev.getType() === 'm.room.encrypted') return '🔒 Зашифрованное сообщение'
+    // Ещё расшифровывается
+    if (ev.getType() === 'm.room.encrypted') return '🔒 …'
   }
   return ''
 }
@@ -38,6 +41,7 @@ const CLIENT_EVENTS = [
   RoomEvent.Name, // комнату переименовали
   RoomEvent.MyMembership, // тебя пригласили, ты вошёл или вышел
   RoomEvent.Receipt, // кто-то прочитал сообщения
+  MatrixEventEvent.Decrypted, // сообщение расшифровалось (в том числе старое, из бэкапа)
 ]
 
 export function useRooms(client) {

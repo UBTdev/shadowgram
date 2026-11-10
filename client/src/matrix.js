@@ -34,10 +34,18 @@ export function clearSession() {
   localStorage.removeItem(SESSION_KEY)
 }
 
-// Создаёт клиент из сессии и запускает синхронизацию с сервером.
+// Создаёт клиент из сессии, включает шифрование и запускает синхронизацию.
 // Возвращает клиент, когда пришла первая синхронизация и список комнат готов
 export async function startClient(session) {
-  const client = createClient(session)
+  const client = createClient({
+    ...session,
+    // Подтверждать устройства будем сравнением эмодзи (SAS)
+    verificationMethods: ['m.sas.v1'],
+  })
+
+  // Включаем E2EE. Ключи этого устройства хранятся в IndexedDB браузера
+  // и никогда не уходят на сервер в открытом виде
+  await client.initRustCrypto()
 
   // Подписываемся заранее, чтобы не пропустить событие
   const firstSync = new Promise((resolve, reject) => {
@@ -59,11 +67,12 @@ export async function startClient(session) {
   return client
 }
 
-// Выход: сервер удаляет токен и устройство, мы — сохранённую сессию
+// Выход: сервер удаляет токен и устройство, мы — сессию и ключи шифрования из браузера
 export async function logout(client) {
   try {
     await client.logout(true)
   } finally {
     clearSession()
+    await client.clearStores()
   }
 }
