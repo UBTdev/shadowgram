@@ -40,9 +40,7 @@ onMounted(() => {
 
 <template>
   <main class="min-h-screen bg-zinc-900 text-zinc-100">
-    <div v-if="status === 'loading'" class="flex min-h-screen items-center justify-center text-zinc-400">
-      Загрузка…
-    </div>
+    <div v-if="status === 'loading'" class="flex min-h-screen items-center justify-center text-zinc-400">Загрузка…</div>
 
     <div v-else-if="status === 'login'" class="flex min-h-screen flex-col items-center justify-center gap-4 p-4">
       <LoginForm @logged-in="start" />

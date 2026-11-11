@@ -1,9 +1,6 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ClientEvent, RoomEvent, MatrixEventEvent, NotificationCountType } from 'matrix-js-sdk'
 
-
-
-
 // 1. Находит последнее сообщение в комнате. Возвращает само событие, не текст
 function lastMessageEvent(room) {
   const events = room.getLiveTimeline().getEvents()
@@ -27,7 +24,6 @@ function lastMessagePreview(client, room, ev) {
   const name = room.getMember(ev.getSender())?.name ?? ev.getSender()
   return name + ': ' + body
 }
-
 
 // 3. Статус твоего последнего сообщения: null (не твоё) | 'sent' | 'read'
 function messageStatus(client, room, ev) {
@@ -61,7 +57,6 @@ function snapshot(client) {
     .sort((a, b) => b.ts - a.ts)
 }
 
-
 // События, после которых список нужно пересобрать
 const CLIENT_EVENTS = [
   ClientEvent.Sync, // каждая синхронизация, заодно обновляет счётчики непрочитанного
@@ -85,5 +80,3 @@ export function useRooms(client) {
 
   return rooms
 }
-
-

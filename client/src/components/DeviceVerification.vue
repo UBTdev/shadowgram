@@ -10,7 +10,10 @@ const { deviceVerified, state, emojis, error, start, confirm, mismatch, close } 
 
 <template>
   <!-- Баннер: устройство не подтверждено -->
-  <div v-if="deviceVerified === false && state === 'idle'" class="border-b border-amber-900 bg-amber-950/60 px-4 py-3 text-sm">
+  <div
+    v-if="deviceVerified === false && state === 'idle'"
+    class="border-b border-amber-900 bg-amber-950/60 px-4 py-3 text-sm"
+  >
     <p class="text-amber-200">Это устройство не подтверждено. Старые сообщения не расшифруются.</p>
     <button class="mt-2 font-medium text-amber-400 hover:text-amber-300" @click="start">
       Подтвердить с другого устройства
@@ -53,7 +56,9 @@ const { deviceVerified, state, emojis, error, start, confirm, mismatch, close } 
       <template v-else-if="state === 'done'">
         <h2 class="text-lg font-semibold text-emerald-400">Устройство подтверждено ✅</h2>
         <p class="text-zinc-400">Старые сообщения расшифруются сами в течение нескольких секунд.</p>
-        <button class="w-full rounded-lg bg-emerald-600 py-2 font-medium hover:bg-emerald-500" @click="close">Готово</button>
+        <button class="w-full rounded-lg bg-emerald-600 py-2 font-medium hover:bg-emerald-500" @click="close">
+          Готово
+        </button>
       </template>
 
       <template v-else-if="state === 'cancelled'">
