@@ -5,9 +5,10 @@ import DeviceVerification from './DeviceVerification.vue'
 const props = defineProps({
   client: { type: Object, required: true },
 })
-const emit = defineEmits(['logout', 'select'])
 
 const rooms = useRooms(props.client)
+
+const emit = defineEmits(['logout', 'select'])
 
 // Сегодня — время, раньше — дата, как в Telegram
 function formatTime(ts) {
