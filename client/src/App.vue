@@ -51,8 +51,8 @@ onMounted(() => {
     </div>
     <div class="flex" v-else>
       <RoomList :client="client" @logout="onLogout" @select="selectedRoomId = $event" />
-      <ChatView v-if="selectedRoomId" :key="selectedRoomId" :client="client" :room-id="selectedRoomId"/>
-      <div v-else class="flex flex-1 items-center justify-center text-zinc-500">Выберите чат</div>
+      <ChatView v-if="selectedRoomId" :key="selectedRoomId" :client="client" :room-id="selectedRoomId" @close="selectedRoomId = null"/>
+      <div v-else class="flex flex-1 items-center justify-center text-zinc-500 select-none">Выберите чат</div>
     </div>
 
   </main>

@@ -26,7 +26,7 @@ function initial(name) {
 </script>
 
 <template>
-  <aside class="flex h-screen w-80 shrink-0 flex-col border-r border-zinc-800">
+  <aside class="flex h-screen w-80 shrink-0 flex-col border-r border-zinc-800 select-none">
     <header class="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
       <span class="truncate font-semibold">{{ client.getUserId() }}</span>
       <button class="text-sm text-zinc-400 hover:text-zinc-100" @click="emit('logout')">Выйти</button>
