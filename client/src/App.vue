@@ -3,12 +3,14 @@ import { ref, shallowRef, onMounted } from 'vue'
 import { loadSession, clearSession, startClient, logout } from './matrix'
 import LoginForm from './components/LoginForm.vue'
 import RoomList from './components/RoomList.vue'
+import ChatView from './components/ChatView.vue'
 
 // shallowRef, а не ref: иначе Vue обернёт весь клиент SDK в реактивные прокси,
 // это медленно и ломает внутреннюю логику SDK
 const client = shallowRef(null)
 const status = ref('loading') // loading | login | ready
 const error = ref('')
+const selectedRoomId = ref(null)
 
 async function start(session) {
   status.value = 'loading'
@@ -28,6 +30,7 @@ async function onLogout() {
   await logout(client.value)
   client.value = null
   status.value = 'login'
+  selectedRoomId.value = null
 }
 
 // При открытии страницы пробуем продолжить сохранённую сессию
@@ -46,7 +49,11 @@ onMounted(() => {
       <LoginForm @logged-in="start" />
       <p v-if="error" class="text-sm text-red-400">{{ error }}</p>
     </div>
+    <div class="flex" v-else>
+      <RoomList :client="client" @logout="onLogout" @select="selectedRoomId = $event" />
+      <ChatView v-if="selectedRoomId" :key="selectedRoomId" :client="client" :room-id="selectedRoomId"/>
+      <div v-else class="flex flex-1 items-center justify-center text-zinc-500">Выберите чат</div>
+    </div>
 
-    <RoomList v-else :client="client" @logout="onLogout" />
   </main>
 </template>
