@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useTimeline } from '../composables/useTimeline'
 
 const props = defineProps({
@@ -18,6 +18,17 @@ onMounted(() => window.addEventListener('keydown', onKeydown))
 onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 const { messages } = useTimeline(props.client, props.roomId)
+
+const text = ref('')
+
+function send() {
+  const body = text.value.trim() // как username.value.trim() в LoginForm
+  if (!body) return // пустое или одни пробелы не отправляем
+
+  text.value = '' // поле очищаем сразу, сообщение уже видно в ленте
+  props.client.sendTextMessage(props.roomId, body).catch((e) => console.error('Не отправлено:', e))
+}
+
 </script>
 
 <template>
@@ -55,8 +66,20 @@ const { messages } = useTimeline(props.client, props.roomId)
         </div>
       </li>
     </ul>
-    <div class="absolute bottom-0">
-      <textarea class="w-full"> </textarea>
-    </div>
+
+    <footer class="border-t border-zinc-800 px-4 py-3 flex justify-between">
+      <form class="flex justify-between w-full" @submit.prevent="send">
+        <textarea
+          @keydown.enter.exact.prevent="send"
+          v-model="text"
+          rows="1"
+          placeholder="Сообщение..."
+          class="max-h-[35vh] flex-1 resize-none overflow-y-auto [field-sizing:content] focus:outline-none"
+        />
+        <button type="submit" :disabled="!text.trim()" class="shrink-0 disabled:opacity-50 cursor-pointer">
+          Отправить
+        </button>
+      </form>
+    </footer>
   </section>
 </template>
