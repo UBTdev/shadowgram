@@ -58,7 +58,7 @@ onMounted(() => {
         :room-id="selectedRoomId"
         @close="selectedRoomId = null"
       />
-      <div v-else class="flex flex-1 items-center justify-center text-zinc-500 select-none">Выберите чат</div>
+      <div v-else class="flex flex-1 items-center justify-center text-zinc-500 select-none bg-mist-900">Выберите чат</div>
     </div>
   </main>
 </template>

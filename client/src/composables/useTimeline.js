@@ -100,13 +100,29 @@ const CLIENT_EVENTS = [
 export function useTimeline(client, roomId) {
   const room = client.getRoom(roomId)
   const messages = ref(room ? snapshot(client, room) : [])
-  if (!room) return { messages } // комнаты нет, например, ты из неё вышел
+  if (!room) return { messages, markRead: () => {} } // комнаты нет, например, ты из неё вышел
 
   const update = () => {
     messages.value = snapshot(client, room)
   }
   const updateIfThisRoom = (ev) => {
     if (ev.getRoomId() === roomId) update()
+  }
+
+  // Отметить чат прочитанным до последнего события. Вызывать, когда пользователь
+  // действительно видит конец ленты. Сервер по этой отметке сбрасывает счётчик
+  // непрочитанного, а собеседник видит у своего сообщения двойную галочку
+  function markRead() {
+    // Ищем с конца событие, которое уже на сервере. Твоё ещё не отправленное
+    // сообщение пропускаем: на него отметку поставить нельзя, SDK бросит ошибку
+    const last = room
+      .getLiveTimeline()
+      .getEvents()
+      .findLast((ev) => ev.status === null)
+    // Уже прочитано (в том числе в другом клиенте) — лишний запрос не шлём.
+    // SDK запоминает отметку сразу при отправке, так что повторный вызов сюда не дойдёт
+    if (!last || room.hasUserReadEvent(client.getUserId(), last.getId())) return
+    client.sendReadReceipt(last).catch((e) => console.error('Не удалось отметить прочитанным:', e))
   }
 
   onMounted(() => {
@@ -118,5 +134,5 @@ export function useTimeline(client, roomId) {
     CLIENT_EVENTS.forEach((e) => client.off(e, updateIfThisRoom))
   })
 
-  return { messages }
+  return { messages, markRead }
 }

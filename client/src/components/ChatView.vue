@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch, useTemplateRef, onMounted, onUnmounted } from 'vue'
 import { useTimeline } from '../composables/useTimeline'
 
 const props = defineProps({
@@ -20,15 +20,38 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 const { messages } = useTimeline(props.client, props.roomId)
 
 const text = ref('')
+// scrollToBottom (start)
+const list = useTemplateRef('list')
+const atBottom = ref(true)
 
+function onScroll() {
+  const el = list.value
+  const distance = el.scrollHeight - el.scrollTop - el.clientHeight // сколько пикселей до низа
+  atBottom.value = distance < 40
+}
+
+function scrollToBottom() {
+  list.value.scrollTop = list.value.scrollHeight
+}
+
+// sender
 function send() {
   const body = text.value.trim() // как username.value.trim() в LoginForm
   if (!body) return // пустое или одни пробелы не отправляем
 
+  atBottom.value = true
   text.value = '' // поле очищаем сразу, сообщение уже видно в ленте
   props.client.sendTextMessage(props.roomId, body).catch((e) => console.error('Не отправлено:', e))
 }
 
+onMounted(scrollToBottom) // открыли чат
+watch(
+  messages,
+  () => {
+    if (atBottom.value) scrollToBottom()
+  },
+  { flush: 'post' },
+)
 </script>
 
 <template>
@@ -55,18 +78,17 @@ function send() {
         </svg>
       </button>
     </header>
-    <ul class="flex flex-col gap-1 flex-1 overflow-y-auto p-4">
+    <ul ref="list" @scroll="onScroll" class="flex flex-col gap-1 flex-1 overflow-y-auto p-4 bg-mist-900">
       <li class="flex" v-for="message in messages" :key="message.key">
         <div
           class="max-w-[min(75%,30rem)] rounded-2xl px-3 py-2 break-words whitespace-pre-wrap"
           :class="{ 'max-lg:ml-auto bg-emerald-700': message.mine, 'bg-zinc-800': !message.mine }"
         >
           <div v-if="!message.mine" class="text-xs text-zinc-400">{{ message.senderName }}</div>
-          <div class="whitespace-pre-wrap">{{ message.body }}</div>
+          <div class="whitespace-pre-wrap">{{ message.body }} {{ message.time }}</div>
         </div>
       </li>
     </ul>
-
     <footer class="border-t border-zinc-800 px-4 py-3 flex justify-between">
       <form class="flex justify-between w-full" @submit.prevent="send">
         <textarea
