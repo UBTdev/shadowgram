@@ -14,10 +14,16 @@ function onKeydown(event) {
   if (event.key === 'Escape') emit('close')
 }
 
-onMounted(() => window.addEventListener('keydown', onKeydown))
-onUnmounted(() => window.removeEventListener('keydown', onKeydown))
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown)
+  window.addEventListener('focus', readIfVisible)
+})
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('focus', readIfVisible)
+})
 
-const { messages } = useTimeline(props.client, props.roomId)
+const { messages, markRead } = useTimeline(props.client, props.roomId)
 
 const text = ref('')
 // scrollToBottom (start)
@@ -32,6 +38,10 @@ function onScroll() {
 
 function scrollToBottom() {
   list.value.scrollTop = list.value.scrollHeight
+}
+
+function jumpToBottom() {
+  list.value.scrollTo({ top: list.value.scrollHeight, behavior: 'smooth' })
 }
 
 // sender
@@ -50,8 +60,17 @@ watch(
   () => {
     if (atBottom.value) scrollToBottom()
   },
+
   { flush: 'post' },
 )
+
+// mark on read
+function readIfVisible() {
+  if (atBottom.value && document.hasFocus()) markRead()
+}
+
+onMounted(readIfVisible) // открыли чат
+watch([messages, atBottom], readIfVisible) // новое сообщение или докрутил вниз
 </script>
 
 <template>
@@ -89,6 +108,28 @@ watch(
         </div>
       </li>
     </ul>
+
+    <button
+      v-if="!atBottom"
+      type="button"
+      class="absolute right-8 bottom-16 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-300 shadow-lg hover:bg-zinc-700"
+      aria-label="Вниз к новым сообщениям"
+      @click="jumpToBottom"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="h-5 w-5"
+        aria-hidden="true"
+      >
+        <path d="m6 9 6 6 6-6" />
+      </svg>
+    </button>
+
     <footer class="border-t border-zinc-800 px-4 py-3 flex justify-between">
       <form class="flex justify-between w-full" @submit.prevent="send">
         <textarea
